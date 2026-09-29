@@ -482,6 +482,7 @@ export async function createWindow(appConfig?: AppConfig): Promise<void> {
   try {
     const config = appConfig ?? (await getAppConfig())
     const { useWindowFrame = false } = config
+    const useNativeFrame = process.platform === 'darwin' || useWindowFrame
 
     const [mainWindowState] = await Promise.all([
       Promise.resolve(
@@ -503,8 +504,8 @@ export async function createWindow(appConfig?: AppConfig): Promise<void> {
       x: mainWindowState.x,
       y: mainWindowState.y,
       show: false,
-      frame: useWindowFrame,
-      fullscreenable: false,
+      frame: useNativeFrame,
+      fullscreenable: process.platform === 'darwin',
       titleBarStyle: useWindowFrame ? 'default' : 'hidden',
       titleBarOverlay: false,
       autoHideMenuBar: true,
@@ -516,9 +517,6 @@ export async function createWindow(appConfig?: AppConfig): Promise<void> {
       }
     })
     mainWindowState.manage(mainWindow)
-    if (process.platform === 'darwin' && !useWindowFrame) {
-      mainWindow.setWindowButtonVisibility(false)
-    }
     mainWindow.on('maximize', () => {
       mainWindow?.webContents.send('window-maximized')
     })
